@@ -1,6 +1,7 @@
 import sys
 import os
 import attacks
+import subprocess
 
 
 def get_model_name():
@@ -26,6 +27,20 @@ def get_model_name():
         return "gpt-4-1106-preview"
     if user_input == 3:
         return "text-davinci-003"
+        
+
+def check_openai_version(model):
+    # detect openai version
+    version = subprocess.run(["openai", "--version"], capture_output=True).stdout.split()[1]
+    # install the correct version for the selected model
+    if version == b'0.28.1' and model != "text-davinci-003":
+        os.system("pip install openai --upgrade")
+        exit_program("Please restart the application to make the changes effective!")
+    elif version != b'0.28.1' and model == "text-davinci-003":
+        os.system("pip install openai==0.28.1")
+        exit_program("Please restart the application to make the changes effective!")
+    else:
+        return
 
 
 def get_attack():
@@ -124,6 +139,8 @@ def main():
     try:
         # get the LLM model
         model = get_model_name()
+        # check openai version
+        check_openai_version(model)
 
         while True:
             # choose the attack
